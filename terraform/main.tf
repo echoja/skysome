@@ -24,22 +24,6 @@ terraform {
   }
 }
 
-variable "region" {
-  default = "sgp1"
-}
-
-variable "do_token" {}
-variable "github_token" {}
-variable "spaces_access_key" {}
-variable "spaces_secret_key" {}
-variable "domain_name" {
-  default     = "skysome.one"
-  description = "Domain name to use for the app"
-}
-variable "email" {
-  default     = "eszqsc112@gmail.com"
-  description = "Email address to use for Let's Encrypt"
-}
 
 provider "digitalocean" {
   token             = var.do_token
@@ -150,7 +134,7 @@ resource "kubernetes_deployment" "skysome_web" {
 
       spec {
         container {
-          image = "node:20"
+          image = "ghcr.io/echoja/skysome:${web_image_tag}"
           name  = "skysome-web"
 
           port {
