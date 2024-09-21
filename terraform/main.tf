@@ -273,35 +273,35 @@ resource "kubernetes_service" "skysome_web" {
   }
 }
 
-# resource "kubernetes_manifest" "cluster_issuer" {
-#   manifest = {
-#     apiVersion = "cert-manager.io/v1"
-#     kind       = "ClusterIssuer"
-#     metadata = {
-#       name = "letsencrypt-prod"
-#     }
-#     spec = {
-#       acme = {
-#         email  = var.email
-#         server = "https://acme-v02.api.letsencrypt.org/directory"
-#         privateKeySecretRef = {
-#           name = "letsencrypt-prod-account-key"
-#         }
-#         solvers = [
-#           {
-#             http01 = {
-#               ingress = {
-#                 class = "nginx"
-#               }
-#             }
-#           }
-#         ]
-#       }
-#     }
-#   }
+resource "kubernetes_manifest" "cluster_issuer" {
+  manifest = {
+    apiVersion = "cert-manager.io/v1"
+    kind       = "ClusterIssuer"
+    metadata = {
+      name = "letsencrypt-prod"
+    }
+    spec = {
+      acme = {
+        email  = var.email
+        server = "https://acme-v02.api.letsencrypt.org/directory"
+        privateKeySecretRef = {
+          name = "letsencrypt-prod-account-key"
+        }
+        solvers = [
+          {
+            http01 = {
+              ingress = {
+                class = "nginx"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
 
-#   depends_on = [helm_release.cert_manager, data.digitalocean_kubernetes_cluster.skysome_cluster]
-# }
+  depends_on = [helm_release.cert_manager, data.digitalocean_kubernetes_cluster.skysome_cluster]
+}
 
 output "kubernetes_cluster_name" {
   value = digitalocean_kubernetes_cluster.skysome_cluster.name
