@@ -16,25 +16,13 @@ variable "region" {
 variable "do_token" {}
 variable "spaces_access_key" {}
 variable "spaces_secret_key" {}
+variable "github_token" {}
 
 provider "digitalocean" {
   token = var.do_token
 
   spaces_access_id  = var.spaces_access_key
   spaces_secret_key = var.spaces_secret_key
-}
-
-# Kubernetes Cluster
-resource "digitalocean_kubernetes_cluster" "skysome_cluster" {
-  name    = "skysome-cluster"
-  region  = var.region
-  version = "1.31.1-do.0"
-
-  node_pool {
-    name       = "worker-pool"
-    size       = "s-1vcpu-2gb"
-    node_count = 1
-  }
 }
 
 # Database
@@ -59,108 +47,49 @@ resource "digitalocean_domain" "skysome_domain" {
   name = "skysome.one"
 }
 
-# Firewall
-resource "digitalocean_firewall" "skysome_firewall" {
-  name = "skysome-firewall"
-
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "80"
-    source_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "443"
-    source_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  outbound_rule {
-    protocol              = "tcp"
-    port_range            = "1-65535"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  outbound_rule {
-    protocol              = "udp"
-    port_range            = "1-65535"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  outbound_rule {
-    protocol              = "icmp"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
-}
-
-# Kubernetes configuration for web server deployment
-resource "kubernetes_deployment" "skysome_web" {
-  metadata {
-    name = "skysome-web"
-  }
-
+# App Platform
+resource "digitalocean_app" "skysome_app" {
   spec {
-    replicas = 1
+    name   = "skysome-app"
+    region = var.region
 
-    selector {
-      match_labels = {
-        app = "skysome-web"
-      }
-    }
+    service {
+      name               = "skysome-web"
+      instance_size_slug = "basic-xxs"
+      instance_count     = 1
 
-    template {
-      metadata {
-        labels = {
-          app = "skysome-web"
+      image {
+        registry_type = "GHCR"
+        repository    = "echoja/skysome-app"
+        tag           = "latest"
+        deploy_on_push {
+          enabled = false
         }
       }
 
-      spec {
-        container {
-          image = "node:20"
-          name  = "skysome-web"
+      http_port = 3000
 
-          port {
-            container_port = 3000
-          }
+      env {
+        key   = "DATABASE_URL"
+        value = digitalocean_database_cluster.skysome_db.uri
+      }
 
-          env {
-            name  = "DATABASE_URL"
-            value = digitalocean_database_cluster.skysome_db.uri
-          }
-
-          env {
-            name  = "SPACES_ENDPOINT"
-            value = digitalocean_spaces_bucket.skysome_storage.bucket_domain_name
-          }
-        }
+      env {
+        key   = "SPACES_ENDPOINT"
+        value = digitalocean_spaces_bucket.skysome_storage.bucket_domain_name
       }
     }
-  }
-}
 
-resource "kubernetes_service" "skysome_web" {
-  metadata {
-    name = "skysome-web"
-  }
-
-  spec {
-    selector = {
-      app = kubernetes_deployment.skysome_web.metadata[0].name
+    domain {
+      name = digitalocean_domain.skysome_domain.name
+      type = "PRIMARY"
     }
-
-    port {
-      port        = 80
-      target_port = 3000
-    }
-
-    type = "LoadBalancer"
   }
 }
 
 # Output important information
-output "kubernetes_cluster_name" {
-  value = digitalocean_kubernetes_cluster.skysome_cluster.name
+output "app_url" {
+  value = digitalocean_app.skysome_app.live_url
 }
 
 output "database_uri" {
