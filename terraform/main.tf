@@ -134,7 +134,7 @@ resource "kubernetes_deployment" "skysome_web" {
 
       spec {
         container {
-          image = "ghcr.io/echoja/skysome:${web_image_tag}"
+          image = "ghcr.io/echoja/skysome:${var.web_image_tag}"
           name  = "skysome-web"
 
           port {
