@@ -198,7 +198,7 @@ resource "digitalocean_record" "www" {
   domain = digitalocean_domain.skysome_domain.name
   type   = "A"
   name   = "@"
-  value  = data.digitalocean_kubernetes_cluster.skysome_cluster.ipv4_address
+  value  = data.kubernetes_service.nginx_ingress.status.0.load_balancer.0.ingress.0.ip
 
   depends_on = [helm_release.nginx_ingress]
 }
