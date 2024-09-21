@@ -273,6 +273,7 @@ resource "kubernetes_service" "skysome_web" {
   }
 }
 
+// 이 요소는 kubernetes cluster 가 먼저 켜져 있어야 제대로 동작합니다. 
 resource "kubernetes_manifest" "cluster_issuer" {
   manifest = {
     apiVersion = "cert-manager.io/v1"
