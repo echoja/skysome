@@ -42,4 +42,4 @@ jobs:
         tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.version }}
 
     - name: Print image tag
-      run: echo "Image tag: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.version }}"
+      run: echo "Image tag: ${REGISTRY}/${IMAGE_NAME}:${{ github.event.inputs.version }}"
