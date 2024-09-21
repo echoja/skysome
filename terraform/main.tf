@@ -194,6 +194,16 @@ resource "digitalocean_domain" "skysome_domain" {
   name = var.domain_name
 }
 
+data "kubernetes_service" "nginx_ingress" {
+  metadata {
+    name      = "nginx-ingress-ingress-nginx-controller"
+    namespace = "ingress-nginx"
+  }
+
+  depends_on = [helm_release.nginx_ingress]
+}
+
+
 resource "digitalocean_record" "www" {
   domain = digitalocean_domain.skysome_domain.name
   type   = "A"
