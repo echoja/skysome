@@ -29,6 +29,7 @@ variable "region" {
 }
 
 variable "do_token" {}
+variable "github_token" {}
 variable "spaces_access_key" {}
 variable "spaces_secret_key" {}
 variable "domain_name" {
@@ -46,20 +47,25 @@ provider "digitalocean" {
   spaces_secret_key = var.spaces_secret_key
 }
 
+data "digitalocean_kubernetes_cluster" "skysome_cluster" {
+  name       = digitalocean_kubernetes_cluster.skysome_cluster.name
+  depends_on = [digitalocean_kubernetes_cluster.skysome_cluster]
+}
+
 provider "kubernetes" {
-  host  = digitalocean_kubernetes_cluster.skysome_cluster.endpoint
-  token = digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].token
+  host  = data.digitalocean_kubernetes_cluster.skysome_cluster.endpoint
+  token = data.digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].token
   cluster_ca_certificate = base64decode(
-    digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].cluster_ca_certificate
+    data.digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].cluster_ca_certificate
   )
 }
 
 provider "helm" {
   kubernetes {
-    host  = digitalocean_kubernetes_cluster.skysome_cluster.endpoint
-    token = digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].token
+    host  = data.digitalocean_kubernetes_cluster.skysome_cluster.endpoint
+    token = data.digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].token
     cluster_ca_certificate = base64decode(
-      digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].cluster_ca_certificate
+      data.digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].cluster_ca_certificate
     )
   }
 }
@@ -95,7 +101,29 @@ resource "kubernetes_namespace" "skysome" {
   metadata {
     name = "skysome"
   }
-  depends_on = [digitalocean_kubernetes_cluster.skysome_cluster]
+  depends_on = [data.digitalocean_kubernetes_cluster.skysome_cluster]
+}
+
+# GitHub Container Registry 인증을 위한 Kubernetes Secret 생성
+resource "kubernetes_secret" "ghcr_auth" {
+  metadata {
+    name      = "ghcr-auth"
+    namespace = kubernetes_namespace.skysome.metadata[0].name
+  }
+
+  type = "kubernetes.io/dockerconfigjson"
+
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        "ghcr.io" = {
+          auth = base64encode("echoja:${var.github_token}")
+        }
+      }
+    })
+  }
+
+  depends_on = [data.digitalocean_kubernetes_cluster.skysome_cluster]
 }
 
 resource "kubernetes_deployment" "skysome_web" {
@@ -139,10 +167,14 @@ resource "kubernetes_deployment" "skysome_web" {
             value = digitalocean_spaces_bucket.skysome_storage.bucket_domain_name
           }
         }
+
+        image_pull_secrets {
+          name = kubernetes_secret.ghcr_auth.metadata[0].name
+        }
       }
     }
   }
-  depends_on = [digitalocean_kubernetes_cluster.skysome_cluster]
+  depends_on = [data.digitalocean_kubernetes_cluster.skysome_cluster]
 }
 
 resource "helm_release" "nginx_ingress" {
@@ -156,7 +188,7 @@ resource "helm_release" "nginx_ingress" {
     name  = "controller.service.type"
     value = "LoadBalancer"
   }
-  depends_on = [digitalocean_kubernetes_cluster.skysome_cluster]
+  depends_on = [data.digitalocean_kubernetes_cluster.skysome_cluster]
 }
 
 resource "helm_release" "cert_manager" {
@@ -171,7 +203,7 @@ resource "helm_release" "cert_manager" {
     name  = "installCRDs"
     value = "true"
   }
-  depends_on = [digitalocean_kubernetes_cluster.skysome_cluster]
+  depends_on = [data.digitalocean_kubernetes_cluster.skysome_cluster]
 }
 
 resource "digitalocean_domain" "skysome_domain" {
@@ -182,7 +214,7 @@ resource "digitalocean_record" "www" {
   domain = digitalocean_domain.skysome_domain.name
   type   = "A"
   name   = "@"
-  value  = digitalocean_kubernetes_cluster.skysome_cluster.ipv4_address
+  value  = data.digitalocean_kubernetes_cluster.skysome_cluster.ipv4_address
 
   depends_on = [helm_release.nginx_ingress]
 }
@@ -273,7 +305,7 @@ resource "kubernetes_manifest" "cluster_issuer" {
     }
   }
 
-  depends_on = [helm_release.cert_manager]
+  depends_on = [helm_release.cert_manager, data.digitalocean_kubernetes_cluster.skysome_cluster]
 }
 
 output "kubernetes_cluster_name" {
@@ -294,5 +326,5 @@ output "domain_name" {
 }
 
 output "load_balancer_ip" {
-  value = digitalocean_kubernetes_cluster.skysome_cluster.ipv4_address
+  value = data.digitalocean_kubernetes_cluster.skysome_cluster.ipv4_address
 }
