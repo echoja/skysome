@@ -59,14 +59,11 @@ resource "digitalocean_app" "skysome_app" {
       instance_count     = 1
 
       image {
-        registry_type = "DOCKER_HUB"
-        registry      = "ghcr.io"
-        repository    = "echoja/skysome"
-        # registry_credentials = "echoja:${var.github_token}"
-        tag = "latest"
-        deploy_on_push {
-          enabled = false
-        }
+        registry_type        = "DOCKER_HUB"
+        registry             = "ghcr.io"
+        repository           = "echoja/skysome"
+        registry_credentials = "echoja:${var.github_token}"
+        tag                  = "latest"
       }
 
       http_port = 3000
