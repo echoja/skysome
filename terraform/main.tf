@@ -60,7 +60,7 @@ resource "digitalocean_app" "skysome_app" {
 
       image {
         registry_type = "GHCR"
-        repository    = "echoja/skysome-app"
+        repository    = "echoja/skysome"
         tag           = "latest"
         deploy_on_push {
           enabled = false
