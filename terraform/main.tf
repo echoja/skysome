@@ -59,7 +59,8 @@ resource "digitalocean_app" "skysome_app" {
       instance_count     = 1
 
       image {
-        registry_type = "GHCR"
+        registry_type = "DOCKER_HUB"
+        registry      = "ghcr.io"
         repository    = "echoja/skysome"
         tag           = "latest"
         deploy_on_push {
@@ -86,6 +87,18 @@ resource "digitalocean_app" "skysome_app" {
     }
   }
 }
+
+# GitHub Container Registry Authentication
+resource "digitalocean_app_config" "skysome_app_config" {
+  app_id = digitalocean_app.skysome_app.id
+
+  registry {
+    server   = "ghcr.io"
+    username = "echoja"
+    password = var.github_token
+  }
+}
+
 
 # Output important information
 output "app_url" {
