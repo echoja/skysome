@@ -181,7 +181,7 @@ resource "helm_release" "cert_manager" {
   chart            = "cert-manager"
   namespace        = "cert-manager"
   create_namespace = true
-  version          = "v1.11.0"
+  version          = "v1.15.3"
 
   set {
     name  = "installCRDs"
