@@ -1,5 +1,7 @@
 name: build-and-push
 
+run-name: '[BUILD] "${{ github.event.head_commit.message }}" by ${{ github.event.head_commit.author.name }} (${{ github.repository }}:${{ github.run_number }})'
+
 on:
   workflow_dispatch:
   push:
@@ -13,7 +15,7 @@ env:
 
 jobs:
   build-and-push:
-    name: '[BUILD] "${{ github.event.head_commit.message }}" by ${{ github.event.head_commit.author.name }} (${{ github.repository }}:${{ github.run_number }})'
+    name: "Build and Push ${{ github.repository }}:${{ github.run_number }}"
     runs-on: ubuntu-latest
     permissions:
       contents: read
