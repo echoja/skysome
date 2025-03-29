@@ -2,6 +2,8 @@
 
 _**Soulful Network Service**_
 
+[🚀 웹앱 빌드하기](https://github.com/echoja/skysome/actions/workflows/deploy.yml)
+
 **하늘섬**은 일상의 반복 속에서 지친 사람들에게 잠시나마 색다른 경험을 제공하는 게임 같은 앱입니다. 화려한 그래픽이나 시끄러운 콘텐츠 대신, 단순한 UI와 잔잔한 상호작용을 통해 유저들이 자신만의 시간을 만들어갈 수 있도록 설계되었습니다.
 
 - 낯선 영혼에게 무심한 듯 인사를 건네세요.
