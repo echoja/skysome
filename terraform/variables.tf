@@ -17,5 +17,5 @@ variable "email" {
 }
 
 variable "web_image_tag" {
-  default = "latest"
+  default = "3"
 }
