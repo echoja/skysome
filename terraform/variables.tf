@@ -5,7 +5,10 @@ variable "region" {
 
 variable "do_token" {}
 variable "github_token" {}
-variable "ghcr_username" {}
+variable "ghcr_username" {
+  default     = "echoja"
+  description = "GitHub username for GitHub Container Registry"
+}
 variable "spaces_access_key" {}
 variable "spaces_secret_key" {}
 variable "domain_name" {
