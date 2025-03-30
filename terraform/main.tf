@@ -64,18 +64,6 @@ resource "digitalocean_spaces_bucket" "skysome_storage" {
   acl    = "private"
 }
 
-resource "digitalocean_spaces_bucket" "storage_test1" {
-  name   = "storage_test1"
-  region = var.region
-  acl    = "private"
-}
-
-resource "digitalocean_spaces_bucket" "storage_test2" {
-  name   = "storage_test2"
-  region = var.region
-  acl    = "private"
-}
-
 resource "digitalocean_kubernetes_cluster" "skysome_cluster" {
   name    = "skysome-cluster"
   region  = var.region
