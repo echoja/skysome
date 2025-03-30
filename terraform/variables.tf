@@ -5,6 +5,7 @@ variable "region" {
 
 variable "do_token" {}
 variable "github_token" {}
+variable "ghcr_username" {}
 variable "spaces_access_key" {}
 variable "spaces_secret_key" {}
 variable "domain_name" {
