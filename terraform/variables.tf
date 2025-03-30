@@ -5,6 +5,16 @@ variable "region" {
 
 variable "do_token" {}
 variable "github_token" {}
+variable "github_username" {
+  default     = "echoja"
+  description = "GitHub username for the container registry"
+}
+
+variable "github_email" {
+  default = "eszqsc112@gmail.com"
+  description = "GitHub email for the container registry"
+}
+
 variable "spaces_access_key" {}
 variable "spaces_secret_key" {}
 variable "domain_name" {
