@@ -21,5 +21,5 @@ variable "email" {
 }
 
 variable "web_image_tag" {
-  default = "13"
+  default = "14"
 }
