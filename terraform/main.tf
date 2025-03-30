@@ -32,19 +32,19 @@ provider "digitalocean" {
 }
 
 provider "kubernetes" {
-  host  = digitalocean_kubernetes_cluster.skysome_cluster.endpoint
-  token = digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].token
+  host  = data.digitalocean_kubernetes_cluster.skysome_cluster.endpoint
+  token = data.digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].token
   cluster_ca_certificate = base64decode(
-    digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].cluster_ca_certificate
+    data.digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].cluster_ca_certificate
   )
 }
 
 provider "helm" {
   kubernetes {
-    host  = digitalocean_kubernetes_cluster.skysome_cluster.endpoint
-    token = digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].token
+    host  = data.digitalocean_kubernetes_cluster.skysome_cluster.endpoint
+    token = data.digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].token
     cluster_ca_certificate = base64decode(
-      digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].cluster_ca_certificate
+      data.digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].cluster_ca_certificate
     )
   }
 }
@@ -80,7 +80,7 @@ resource "kubernetes_namespace" "skysome" {
   metadata {
     name = "skysome"
   }
-  depends_on = [digitalocean_kubernetes_cluster.skysome_cluster]
+  depends_on = [data.digitalocean_kubernetes_cluster.skysome_cluster]
 }
 
 # GitHub Container Registry 인증을 위한 Kubernetes Secret 생성
@@ -102,7 +102,7 @@ resource "kubernetes_secret" "ghcr_auth" {
     })
   }
 
-  depends_on = [digitalocean_kubernetes_cluster.skysome_cluster]
+  depends_on = [data.digitalocean_kubernetes_cluster.skysome_cluster]
 }
 
 resource "kubernetes_deployment" "skysome_web" {
@@ -153,7 +153,7 @@ resource "kubernetes_deployment" "skysome_web" {
       }
     }
   }
-  depends_on = [digitalocean_kubernetes_cluster.skysome_cluster]
+  depends_on = [data.digitalocean_kubernetes_cluster.skysome_cluster]
 }
 
 resource "helm_release" "nginx_ingress" {
@@ -167,7 +167,7 @@ resource "helm_release" "nginx_ingress" {
     name  = "controller.service.type"
     value = "LoadBalancer"
   }
-  depends_on = [digitalocean_kubernetes_cluster.skysome_cluster]
+  depends_on = [data.digitalocean_kubernetes_cluster.skysome_cluster]
 }
 
 resource "helm_release" "cert_manager" {
@@ -182,7 +182,7 @@ resource "helm_release" "cert_manager" {
     name  = "installCRDs"
     value = "true"
   }
-  depends_on = [digitalocean_kubernetes_cluster.skysome_cluster]
+  depends_on = [data.digitalocean_kubernetes_cluster.skysome_cluster]
 }
 
 resource "digitalocean_domain" "skysome_domain" {
@@ -296,7 +296,7 @@ resource "kubernetes_manifest" "cluster_issuer" {
     }
   }
 
-  depends_on = [helm_release.cert_manager, digitalocean_kubernetes_cluster.skysome_cluster]
+  depends_on = [helm_release.cert_manager, data.digitalocean_kubernetes_cluster.skysome_cluster]
 }
 
 output "kubernetes_cluster_name" {
@@ -317,5 +317,5 @@ output "domain_name" {
 }
 
 output "load_balancer_ip" {
-  value = digitalocean_kubernetes_cluster.skysome_cluster.ipv4_address
+  value = data.digitalocean_kubernetes_cluster.skysome_cluster.ipv4_address
 }
