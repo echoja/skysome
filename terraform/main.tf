@@ -31,6 +31,11 @@ provider "digitalocean" {
   spaces_secret_key = var.spaces_secret_key
 }
 
+data "digitalocean_kubernetes_cluster" "skysome_cluster" {
+  name       = digitalocean_kubernetes_cluster.skysome_cluster.name
+  depends_on = [digitalocean_kubernetes_cluster.skysome_cluster]
+}
+
 provider "kubernetes" {
   host  = data.digitalocean_kubernetes_cluster.skysome_cluster.endpoint
   token = data.digitalocean_kubernetes_cluster.skysome_cluster.kube_config[0].token
